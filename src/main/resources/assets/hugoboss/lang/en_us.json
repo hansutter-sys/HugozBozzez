@@ -1,0 +1,26 @@
+{
+  "itemGroup.hugoboss": "Mega Creeper Tab",
+  "block.hugoboss.example_block": "Example Block",
+  "item.hugoboss.example_item": "Example Item",
+  "item.hugoboss.creeper_heart": "Creeper Heart",
+  "item.hugoboss.tnt_staff": "TNT Staff",
+  "item.hugoboss.mega_creeper_spawn_egg": "Mega Creeper Spawn Egg",
+  "entity.hugoboss.mega_creeper": "Mega Creeper",
+
+  "hugoboss.configuration.title": "Mega Creeper Configs",
+  "hugoboss.configuration.section.hugoboss.common.toml": "Mega Creeper Configs",
+  "hugoboss.configuration.section.hugoboss.common.toml.title": "Mega Creeper Configs",
+  "hugoboss.configuration.items": "Item List",
+  "hugoboss.configuration.logDirtBlock": "Log Dirt Block",
+  "hugoboss.configuration.magicNumberIntroduction": "Magic Number Text",
+  "hugoboss.configuration.magicNumber": "Magic Number",
+  "entity.hugoboss.sea_serpent": "The Great Sea Serpent",
+  "entity.hugoboss.minor_serpent": "Minor Serpent",
+  "hugoboss.configuration.megaCreeperSpawnWeight": "Mega Creeper Spawn Weight",
+  "item.hugoboss.sea_serpent_spawn_egg": "Sea Serpent Spawn Egg",
+  "item.hugoboss.minor_serpent_spawn_egg": "Minor Serpent Spawn Egg",
+  "item.hugoboss.gorilla_spawn_egg": "Gorilla Spawn Egg",
+  "item.hugoboss.monkey_spawn_egg": "Monkey Spawn Egg",
+  "entity.hugoboss.gorilla": "King Gorilla",
+  "entity.hugoboss.monkey": "Agile Monkey"
+}

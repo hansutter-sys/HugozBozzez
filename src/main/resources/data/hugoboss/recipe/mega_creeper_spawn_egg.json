@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:creeper_head"
+    },
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "S": {
+      "item": "minecraft:turtle_egg"
+    }
+  },
+  "pattern": [
+    " T ",
+    "SHS",
+    " T "
+  ],
+  "result": {
+    "count": 1,
+    "id": "hugoboss:mega_creeper_spawn_egg"
+  }
+}
