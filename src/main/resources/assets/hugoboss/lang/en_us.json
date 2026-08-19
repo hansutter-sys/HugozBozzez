@@ -21,6 +21,8 @@
   "item.hugoboss.minor_serpent_spawn_egg": "Minor Serpent Spawn Egg",
   "item.hugoboss.gorilla_spawn_egg": "Gorilla Spawn Egg",
   "item.hugoboss.monkey_spawn_egg": "Monkey Spawn Egg",
+  "item.hugoboss.giant_eagle_spawn_egg": "Giant Eagle Spawn Egg",
   "entity.hugoboss.gorilla": "King Gorilla",
-  "entity.hugoboss.monkey": "Agile Monkey"
+  "entity.hugoboss.monkey": "Agile Monkey",
+  "entity.hugoboss.giant_eagle": "Giant Eagle"
 }

@@ -41,11 +41,15 @@ public class HugoBOSSClient {
     public static final net.minecraft.client.model.geom.ModelLayerLocation MONKEY_MODEL_LAYER = 
             new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "monkey"), "main");
 
+    public static final net.minecraft.client.model.geom.ModelLayerLocation EAGLE_MODEL_LAYER = 
+            new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "giant_eagle"), "main");
+
     @SubscribeEvent
     static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(SERPENT_MODEL_LAYER, net.hans.hugoboss.client.model.SerpentModel::createBodyLayer);
         event.registerLayerDefinition(GORILLA_MODEL_LAYER, net.hans.hugoboss.client.model.GorillaModel::createBodyLayer);
         event.registerLayerDefinition(MONKEY_MODEL_LAYER, net.hans.hugoboss.client.model.MonkeyModel::createBodyLayer);
+        event.registerLayerDefinition(EAGLE_MODEL_LAYER, net.hans.hugoboss.client.model.EagleModel::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -55,6 +59,7 @@ public class HugoBOSSClient {
         event.registerEntityRenderer(ModEntities.MINOR_SERPENT.get(), net.hans.hugoboss.client.renderer.MinorSerpentRenderer::new);
         event.registerEntityRenderer(ModEntities.GORILLA.get(), net.hans.hugoboss.client.renderer.GorillaRenderer::new);
         event.registerEntityRenderer(ModEntities.MONKEY.get(), net.hans.hugoboss.client.renderer.MonkeyRenderer::new);
+        event.registerEntityRenderer(ModEntities.GIANT_EAGLE.get(), net.hans.hugoboss.client.renderer.EagleRenderer::new);
     }
 }
 

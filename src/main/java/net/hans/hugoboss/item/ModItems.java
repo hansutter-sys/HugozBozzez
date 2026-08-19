@@ -32,6 +32,9 @@ public class ModItems {
     public static final DeferredItem<Item> MONKEY_SPAWN_EGG = ITEMS.register("monkey_spawn_egg", 
             () -> new DeferredSpawnEggItem(ModEntities.MONKEY, 0x6E4E37, 0xA67049, new Item.Properties()));
 
+    public static final DeferredItem<Item> GIANT_EAGLE_SPAWN_EGG = ITEMS.register("giant_eagle_spawn_egg", 
+            () -> new DeferredSpawnEggItem(ModEntities.GIANT_EAGLE, 0x4A2E18, 0xF5B041, new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

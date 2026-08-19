@@ -1,4 +1,5 @@
 {
   "type": "hugoboss:configurable_spawns",
-  "biomes": "#minecraft:is_overworld"
+  "biomes": "#c:is_desert"
 }
+

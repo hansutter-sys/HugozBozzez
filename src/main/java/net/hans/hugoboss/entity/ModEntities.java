@@ -46,6 +46,12 @@ public class ModEntities {
                             .sized(0.6F, 0.8F)
                             .build("monkey"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantEagleEntity>> GIANT_EAGLE = 
+            ENTITY_TYPES.register("giant_eagle", 
+                    () -> EntityType.Builder.of(GiantEagleEntity::new, MobCategory.CREATURE)
+                            .sized(1.8F, 2.0F)
+                            .build("giant_eagle"));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }
@@ -57,6 +63,7 @@ public class ModEntities {
         event.put(MINOR_SERPENT.get(), MinorSerpentEntity.createAttributes().build());
         event.put(GORILLA.get(), GorillaEntity.createAttributes().build());
         event.put(MONKEY.get(), MonkeyEntity.createAttributes().build());
+        event.put(GIANT_EAGLE.get(), GiantEagleEntity.createAttributes().build());
     }
 
     @SubscribeEvent
@@ -94,6 +101,13 @@ public class ModEntities {
                 net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules,
+                net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+        event.register(
+                GIANT_EAGLE.get(),
+                net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                net.minecraft.world.entity.animal.Animal::checkAnimalSpawnRules,
                 net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
     }
