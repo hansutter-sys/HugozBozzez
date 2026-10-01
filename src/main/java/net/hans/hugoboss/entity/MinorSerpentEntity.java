@@ -1,5 +1,9 @@
 package net.hans.hugoboss.entity;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -11,7 +15,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.phys.Vec3;
 
 public class MinorSerpentEntity extends Monster {
@@ -45,11 +48,11 @@ public class MinorSerpentEntity extends Monster {
     }
 
     @Override
-    public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
-        if (source.is(net.minecraft.world.damagesource.DamageTypes.DROWN)) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        if (source.is(DamageTypes.DROWN)) {
             return false;
         }
-        return super.hurt(source, amount);
+        return super.hurtServer(serverLevel, source, amount);
     }
 
     @Override
@@ -58,7 +61,7 @@ public class MinorSerpentEntity extends Monster {
     }
 
     @Override
-    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+    public boolean doHurtTarget(ServerLevel serverLevel, Entity target) {
         if (target instanceof Player player) {
             // Apply custom damage calculation to always deal at least 3 hearts of damage
             float finalDamage = 6.0F; // 3 hearts
@@ -66,13 +69,13 @@ public class MinorSerpentEntity extends Monster {
             if (armorValue < 20) {
                 finalDamage += (20 - armorValue) * 0.4F; // scaling for weaker armors
             }
-            boolean hurt = player.hurt(this.damageSources().magic(), finalDamage);
+            boolean hurt = player.hurtServer(serverLevel, this.damageSources().magic(), finalDamage);
             if (hurt) {
                 this.playSound(net.minecraft.sounds.SoundEvents.PHANTOM_BITE, 1.0F, 1.0F);
             }
             return hurt;
         }
-        return super.doHurtTarget(target);
+        return super.doHurtTarget(serverLevel, target);
     }
 
     public static class MinorSerpentMoveControl extends MoveControl {

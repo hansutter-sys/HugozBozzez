@@ -58,12 +58,12 @@ public class HugoBOSS {
             BIOME_MODIFIER_SERIALIZERS.register("configurable_spawns", () -> net.hans.hugoboss.world.ConfigurableSpawnBiomeModifier.CODEC);
 
     // Creates a new Block with the id "hugoboss:example_block", combining the namespace and path
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
+    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", () -> BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
     // Creates a new BlockItem with the id "hugoboss:example_block", combining the namespace and path
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
 
     // Creates a new food item with the id "hugoboss:example_id", nutrition 1 and saturation 2
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
+    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", () -> new Item.Properties().food(new FoodProperties.Builder()
             .nutrition(1).saturationModifier(2f).build()));
 
     // Creates a creative tab with the id "hugoboss:example_tab" for the example item, that is placed after the combat tab

@@ -23,7 +23,7 @@ public class TntStaffItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
 
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             // Spawn primed TNT at player's eye height
             double spawnY = player.getY() + player.getEyeHeight() - 0.3D;
             PrimedTnt tnt = new PrimedTnt(level, player.getX(), spawnY, player.getZ(), player);
@@ -48,7 +48,7 @@ public class TntStaffItem extends Item {
             itemStack.hurtAndBreak(1, player, slot);
 
             // Apply a 1-second cooldown (20 ticks)
-            player.getCooldowns().addCooldown(this, 20);
+            player.getCooldowns().addCooldown(itemStack, 20);
         }
 
         return InteractionResult.SUCCESS;

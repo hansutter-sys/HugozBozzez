@@ -1,14 +1,13 @@
 package net.hans.hugoboss.client.model;
 
-import net.hans.hugoboss.entity.GiantEagleEntity;
-import net.minecraft.client.model.HierarchicalModel;
+import net.hans.hugoboss.client.renderer.state.EagleRenderState;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 
-public class EagleModel<T extends GiantEagleEntity> extends HierarchicalModel<T> {
-    private final ModelPart root;
+public class EagleModel extends EntityModel<EagleRenderState> {
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart right_wing;
@@ -18,7 +17,7 @@ public class EagleModel<T extends GiantEagleEntity> extends HierarchicalModel<T>
     private final ModelPart tail;
 
     public EagleModel(ModelPart root) {
-        this.root = root;
+        super(root);
         this.head = root.getChild("head");
         this.body = root.getChild("body");
         this.right_wing = root.getChild("right_wing");
@@ -34,8 +33,8 @@ public class EagleModel<T extends GiantEagleEntity> extends HierarchicalModel<T>
 
         partdefinition.addOrReplaceChild("head", 
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-3.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F) // Huvud
-                        .texOffs(24, 0).addBox(-1.5F, -1.0F, -7.0F, 3.0F, 4.0F, 3.0F), // Näbb
+                        .texOffs(0, 0).addBox(-3.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F)
+                        .texOffs(24, 0).addBox(-1.5F, -1.0F, -7.0F, 3.0F, 4.0F, 3.0F),
                 PartPose.offset(0.0F, 12.0F, -6.0F));
 
         partdefinition.addOrReplaceChild("body", 
@@ -66,30 +65,24 @@ public class EagleModel<T extends GiantEagleEntity> extends HierarchicalModel<T>
     }
 
     @Override
-    public ModelPart root() {
-        return this.root;
-    }
+    public void setupAnim(EagleRenderState state) {
+        super.setupAnim(state);
+        this.head.yRot = state.yRot * ((float)Math.PI / 180F);
+        this.head.xRot = state.xRot * ((float)Math.PI / 180F);
 
-    @Override
-    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-        this.head.xRot = headPitch * ((float)Math.PI / 180F);
-
-        if (entity.isEagleFlying()) {
-            // Vingflax under flygning
-            float flap = Mth.sin(ageInTicks * 0.4F) * 0.5F;
+        if (state.isFlying) {
+            float flap = Mth.sin(state.ageInTicks * 0.4F) * 0.5F;
             this.right_wing.zRot = -0.3F - flap;
             this.left_wing.zRot = 0.3F + flap;
 
             this.right_leg.xRot = 0.6F;
             this.left_leg.xRot = 0.6F;
         } else {
-            // På marken: Fällda vingar och gång-animation
             this.right_wing.zRot = -1.2F;
             this.left_wing.zRot = 1.2F;
 
-            this.right_leg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-            this.left_leg.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
+            this.right_leg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 1.4F * state.walkAnimationSpeed;
+            this.left_leg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float)Math.PI) * 1.4F * state.walkAnimationSpeed;
         }
     }
 }

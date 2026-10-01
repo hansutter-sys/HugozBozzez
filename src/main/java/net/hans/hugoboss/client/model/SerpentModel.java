@@ -1,21 +1,20 @@
 package net.hans.hugoboss.client.model;
 
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
-public class SerpentModel<T extends Mob> extends HierarchicalModel<T> {
-    private final ModelPart root;
+public class SerpentModel extends EntityModel<LivingEntityRenderState> {
     private final ModelPart head;
     private final ModelPart[] bodies = new ModelPart[13];
 
     public SerpentModel(ModelPart root) {
-        this.root = root;
+        super(root);
         this.head = root.getChild("head");
         
         ModelPart currentParent = this.head;
@@ -48,32 +47,27 @@ public class SerpentModel<T extends Mob> extends HierarchicalModel<T> {
     }
 
     @Override
-    public ModelPart root() {
-        return this.root;
-    }
-
-    @Override
-    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        // Head rotation
-        this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-        this.head.xRot = headPitch * ((float)Math.PI / 180F);
+    public void setupAnim(LivingEntityRenderState state) {
+        super.setupAnim(state);
+        this.head.yRot = state.yRot * ((float)Math.PI / 180F);
+        this.head.xRot = state.xRot * ((float)Math.PI / 180F);
 
         // Body wave animation: slither speed scales with movement speed, with a base idle wave
-        float speed = 0.15F + limbSwingAmount * 0.15F;
-        float magnitude = 0.1F + limbSwingAmount * 0.12F;
+        float speed = 0.15F + state.walkAnimationSpeed * 0.15F;
+        float magnitude = 0.1F + state.walkAnimationSpeed * 0.12F;
 
         for (int i = 0; i < 13; i++) {
             ModelPart bodyPart = this.bodies[i];
             if (bodyPart != null) {
                 // Slithering wave relative to parent
-                float slither = (float) Math.sin(ageInTicks * speed - i * 0.4F) * magnitude;
+                float slither = (float) Math.sin(state.ageInTicks * speed - i * 0.4F) * magnitude;
                 // Slower idle wave
-                float idleBend = (float) Math.sin(ageInTicks * 0.03F - i * 0.2F) * 0.05F;
+                float idleBend = (float) Math.sin(state.ageInTicks * 0.03F - i * 0.2F) * 0.05F;
                 
                 bodyPart.yRot = slither + idleBend;
                 
                 // Add a very subtle vertical wave to look 3D
-                bodyPart.xRot = (float) Math.cos(ageInTicks * 0.04F - i * 0.3F) * 0.03F;
+                bodyPart.xRot = (float) Math.cos(state.ageInTicks * 0.04F - i * 0.3F) * 0.03F;
             }
         }
     }

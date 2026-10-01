@@ -2,7 +2,9 @@ package net.hans.hugoboss;
 
 import net.hans.hugoboss.entity.ModEntities;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.CreeperRenderer;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -15,8 +17,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = HugoBOSS.MODID, dist = Dist.CLIENT)
-// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-@EventBusSubscriber(modid = HugoBOSS.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = HugoBOSS.MODID, value = Dist.CLIENT)
 public class HugoBOSSClient {
     public HugoBOSSClient(ModContainer container) {
         // Allows NeoForge to create a config screen for this mod's configs.
@@ -27,22 +28,21 @@ public class HugoBOSSClient {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
         HugoBOSS.LOGGER.info("HELLO FROM CLIENT SETUP");
         HugoBOSS.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
     }
 
-    public static final net.minecraft.client.model.geom.ModelLayerLocation SERPENT_MODEL_LAYER = 
-            new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "serpent"), "main");
+    public static final ModelLayerLocation SERPENT_MODEL_LAYER = 
+            new ModelLayerLocation(Identifier.fromNamespaceAndPath(HugoBOSS.MODID, "serpent"), "main");
 
-    public static final net.minecraft.client.model.geom.ModelLayerLocation GORILLA_MODEL_LAYER = 
-            new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "gorilla"), "main");
+    public static final ModelLayerLocation GORILLA_MODEL_LAYER = 
+            new ModelLayerLocation(Identifier.fromNamespaceAndPath(HugoBOSS.MODID, "gorilla"), "main");
 
-    public static final net.minecraft.client.model.geom.ModelLayerLocation MONKEY_MODEL_LAYER = 
-            new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "monkey"), "main");
+    public static final ModelLayerLocation MONKEY_MODEL_LAYER = 
+            new ModelLayerLocation(Identifier.fromNamespaceAndPath(HugoBOSS.MODID, "monkey"), "main");
 
-    public static final net.minecraft.client.model.geom.ModelLayerLocation EAGLE_MODEL_LAYER = 
-            new net.minecraft.client.model.geom.ModelLayerLocation(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(HugoBOSS.MODID, "giant_eagle"), "main");
+    public static final ModelLayerLocation EAGLE_MODEL_LAYER = 
+            new ModelLayerLocation(Identifier.fromNamespaceAndPath(HugoBOSS.MODID, "giant_eagle"), "main");
 
     @SubscribeEvent
     static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -62,4 +62,3 @@ public class HugoBOSSClient {
         event.registerEntityRenderer(ModEntities.GIANT_EAGLE.get(), net.hans.hugoboss.client.renderer.EagleRenderer::new);
     }
 }
-

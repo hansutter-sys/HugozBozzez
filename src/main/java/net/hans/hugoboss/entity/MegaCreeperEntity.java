@@ -7,7 +7,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -18,10 +20,12 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.UUID;
 
 public class MegaCreeperEntity extends Creeper {
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
+            UUID.randomUUID(),
             this.getDisplayName(),
             BossEvent.BossBarColor.RED,
             BossEvent.BossBarOverlay.PROGRESS
@@ -54,7 +58,7 @@ public class MegaCreeperEntity extends Creeper {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
 
             // Handle minion spawning in combat
@@ -78,9 +82,9 @@ public class MegaCreeperEntity extends Creeper {
             double y = this.getY();
             double z = this.getZ() + (this.random.nextDouble() - 0.5D) * 6.0D;
 
-            Creeper minion = EntityType.CREEPER.create(level);
+            Creeper minion = EntityTypes.CREEPER.create(level, EntitySpawnReason.MOB_SUMMONED);
             if (minion != null) {
-                minion.moveTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
+                minion.snapTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
 
                 var scaleAttr = minion.getAttribute(Attributes.SCALE);
                 if (scaleAttr != null) {
@@ -125,11 +129,13 @@ public class MegaCreeperEntity extends Creeper {
     @Override
     public void die(DamageSource damageSource) {
         super.die(damageSource);
-        if (!this.level().isClientSide) {
-            // Large explosion of radius 8.0 MOB
-            this.level().explode(this, this.getX(), this.getY(), this.getZ(), 8.0F, Level.ExplosionInteraction.MOB);
-            // Spawn the Creeper Heart item
-            this.spawnAtLocation(ModItems.CREEPER_HEART.get());
+        if (!this.level().isClientSide()) {
+            if (this.level() instanceof ServerLevel serverLevel) {
+                // Large explosion of radius 8.0 MOB
+                serverLevel.explode(this, this.getX(), this.getY(), this.getZ(), 8.0F, Level.ExplosionInteraction.MOB);
+                // Spawn the Creeper Heart item
+                this.spawnAtLocation(serverLevel, ModItems.CREEPER_HEART.get());
+            }
 
             // Clear players from boss bar
             for (ServerPlayer player : this.bossEvent.getPlayers()) {
@@ -175,7 +181,7 @@ public class MegaCreeperEntity extends Creeper {
 
         private void throwTnt(LivingEntity target) {
             Level level = this.boss.level();
-            if (level.isClientSide) return;
+            if (level.isClientSide()) return;
 
             double spawnY = this.boss.getY() + (this.boss.getBbHeight() * 0.8D);
             PrimedTnt tnt = new PrimedTnt(level, this.boss.getX(), spawnY, this.boss.getZ(), this.boss);

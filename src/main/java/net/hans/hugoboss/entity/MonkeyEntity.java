@@ -53,7 +53,7 @@ public class MonkeyEntity extends Monster {
     public void tick() {
         super.tick();
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             LivingEntity target = this.getTarget();
             if (target != null && target.isAlive()) {
                 // Leap down attack

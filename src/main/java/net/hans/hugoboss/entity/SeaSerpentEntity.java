@@ -2,10 +2,12 @@ package net.hans.hugoboss.entity;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
@@ -17,12 +19,8 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -32,6 +30,7 @@ import java.util.UUID;
 public class SeaSerpentEntity extends Monster {
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
+            UUID.randomUUID(),
             this.getDisplayName(),
             BossEvent.BossBarColor.BLUE,
             BossEvent.BossBarOverlay.PROGRESS
@@ -79,17 +78,17 @@ public class SeaSerpentEntity extends Monster {
     public void tick() {
         super.tick();
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
 
             // Swallowing boat mechanic
             LivingEntity target = this.getTarget();
             if (target instanceof Player player && target.isAlive()) {
-                if (player.getVehicle() instanceof Boat boat && this.distanceToSqr(player) <= 8.0 * 8.0) {
+                if (player.getVehicle() instanceof AbstractBoat boat && this.distanceToSqr(player) <= 8.0 * 8.0) {
                     boat.discard(); // destroy the boat
-                    this.playSound(SoundEvents.GENERIC_EAT, 2.0F, 0.8F);
-                    this.playSound(SoundEvents.SHIELD_BREAK, 1.5F, 0.5F); // boat breaking sound
-                    player.startRiding(this, true); // Swallow player!
+                    this.playSound(SoundEvents.GENERIC_EAT.value(), 2.0F, 0.8F);
+                    this.playSound(SoundEvents.SHIELD_BREAK.value(), 1.5F, 0.5F); // boat breaking sound
+                    player.startRiding(this, true, true); // Swallow player!
                 }
             }
 
@@ -117,7 +116,9 @@ public class SeaSerpentEntity extends Monster {
                             float baseDamage = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
 
                             // Deal damage to the serpent
-                            this.hurt(this.damageSources().playerAttack(player), baseDamage);
+                            if (this.level() instanceof ServerLevel serverLevel) {
+                                this.hurtServer(serverLevel, this.damageSources().playerAttack(player), baseDamage);
+                            }
 
                             // Accumulate damage for escape
                             float accumulated = this.swallowedPlayerDamage.getOrDefault(uuid, 0.0F) + baseDamage;
@@ -127,7 +128,9 @@ public class SeaSerpentEntity extends Monster {
                             long lastSelfDamage = this.lastSelfDamageTime.getOrDefault(uuid, 0L);
                             if (now - lastSelfDamage >= 100) { // 5 seconds
                                 this.lastSelfDamageTime.put(uuid, now);
-                                player.hurt(this.damageSources().generic(), 2.0F); // 1 heart of damage
+                                if (this.level() instanceof ServerLevel serverLevel) {
+                                    player.hurtServer(serverLevel, this.damageSources().generic(), 2.0F); // 1 heart of damage
+                                }
                                 player.playSound(SoundEvents.PLAYER_HURT, 1.0F, 1.0F);
                             }
 
@@ -158,12 +161,12 @@ public class SeaSerpentEntity extends Monster {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (source.is(net.minecraft.world.damagesource.DamageTypes.DROWN)) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        if (source.is(DamageTypes.DROWN)) {
             return false;
         }
-        boolean flag = super.hurt(source, amount);
-        if (flag && !this.level().isClientSide) {
+        boolean flag = super.hurtServer(serverLevel, source, amount);
+        if (flag) {
             Entity attacker = source.getEntity();
             boolean isSwallowedAttacker = false;
             if (attacker instanceof Player) {
@@ -183,7 +186,7 @@ public class SeaSerpentEntity extends Monster {
     }
 
     @Override
-    public void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
         if (this.hasPassenger(passenger)) {
             moveFunction.accept(passenger, this.getX(), this.getY() + 0.5D, this.getZ());
         }
@@ -227,14 +230,14 @@ public class SeaSerpentEntity extends Monster {
     }
 
     @Override
-    public boolean doHurtTarget(Entity target) {
+    public boolean doHurtTarget(ServerLevel serverLevel, Entity target) {
         return false;
     }
 
     @Override
     public void die(DamageSource damageSource) {
         super.die(damageSource);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             for (ServerPlayer player : this.bossEvent.getPlayers()) {
                 this.bossEvent.removePlayer(player);
             }
@@ -313,13 +316,13 @@ public class SeaSerpentEntity extends Monster {
 
                 double dist = this.serpent.distanceToSqr(target);
                 if (dist <= 8.0 * 8.0) { // 8 blocks distance
-                    if (!this.serpent.level().isClientSide) {
-                        if (target.getVehicle() instanceof Boat boat) {
+                    if (!this.serpent.level().isClientSide()) {
+                        if (target.getVehicle() instanceof AbstractBoat boat) {
                             boat.discard();
                         }
-                        this.serpent.playSound(SoundEvents.GENERIC_EAT, 2.0F, 0.8F);
-                        this.serpent.playSound(SoundEvents.SHIELD_BREAK, 1.5F, 0.5F);
-                        target.startRiding(this.serpent, true);
+                        this.serpent.playSound(SoundEvents.GENERIC_EAT.value(), 2.0F, 0.8F);
+                        this.serpent.playSound(SoundEvents.SHIELD_BREAK.value(), 1.5F, 0.5F);
+                        target.startRiding(this.serpent, true, true);
                     }
                 }
             }

@@ -1,7 +1,6 @@
 package net.hans.hugoboss.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,14 +16,16 @@ import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.animal.Chicken;
-import net.minecraft.world.entity.animal.Rabbit;
-import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.rabbit.Rabbit;
+import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +70,6 @@ public class GiantEagleEntity extends TamableAnimal {
         FlyingPathNavigation flyingNavigation = new FlyingPathNavigation(this, level);
         flyingNavigation.setCanOpenDoors(false);
         flyingNavigation.setCanFloat(true);
-        flyingNavigation.setCanPassDoors(true);
         return flyingNavigation;
     }
 
@@ -84,9 +84,9 @@ public class GiantEagleEntity extends TamableAnimal {
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
 
         // Jaktmål: Attackerar vilda kaniner, hönor och vatten-djur (fiskar) om örnen INTE är tämjd
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Rabbit.class, 10, true, false, e -> !this.isTame()));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Chicken.class, 10, true, false, e -> !this.isTame()));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WaterAnimal.class, 10, true, false, e -> !this.isTame()));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Rabbit.class, 10, true, false, (e, level) -> !this.isTame()));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Chicken.class, 10, true, false, (e, level) -> !this.isTame()));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WaterAnimal.class, 10, true, false, (e, level) -> !this.isTame()));
     }
 
     public boolean isSaddled() {
@@ -121,7 +121,7 @@ public class GiantEagleEntity extends TamableAnimal {
                 stack.shrink(1);
             }
 
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 if (this.random.nextInt(3) == 0) { // 33% chans att tämjas
                     this.tame(player);
                     this.navigation.stop();
@@ -131,7 +131,7 @@ public class GiantEagleEntity extends TamableAnimal {
                     this.level().broadcastEntityEvent(this, (byte) 6); // Smoke particles
                 }
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
         }
 
         if (this.isTame() && this.isOwnedBy(player)) {
@@ -140,20 +140,20 @@ public class GiantEagleEntity extends TamableAnimal {
                     stack.shrink(1);
                 }
                 this.setSaddled(true);
-                this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
+                this.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
+                return InteractionResult.SUCCESS;
             }
 
             if (this.isSaddled() && !this.isVehicle() && !player.isSecondaryUseActive()) {
-                if (!this.level().isClientSide) {
+                if (!this.level().isClientSide()) {
                     player.startRiding(this);
                 }
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
+                return InteractionResult.SUCCESS;
             }
 
             if (!stack.is(Items.SADDLE) && !this.isFood(stack)) {
                 this.setOrderedToSit(!this.isOrderedToSit());
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -217,21 +217,21 @@ public class GiantEagleEntity extends TamableAnimal {
 
     @Override
     public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
-        return ModEntities.GIANT_EAGLE.get().create(level);
+        return ModEntities.GIANT_EAGLE.get().create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        tag.putBoolean("Saddled", this.isSaddled());
-        tag.putBoolean("Flying", this.isEagleFlying());
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("Saddled", this.isSaddled());
+        output.putBoolean("Flying", this.isEagleFlying());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        this.setSaddled(tag.getBoolean("Saddled"));
-        this.setEagleFlying(tag.getBoolean("Flying"));
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setSaddled(input.getBooleanOr("Saddled", false));
+        this.setEagleFlying(input.getBooleanOr("Flying", true));
     }
 
     @Override
@@ -262,7 +262,9 @@ public class GiantEagleEntity extends TamableAnimal {
                 this.eagle.setDeltaMovement(dir.scale(0.45D));
 
                 if (this.eagle.distanceToSqr(target) < 4.0D) {
-                    this.eagle.doHurtTarget(target);
+                    if (this.eagle.level() instanceof ServerLevel serverLevel) {
+                        this.eagle.doHurtTarget(serverLevel, target);
+                    }
                     if (!target.isAlive()) {
                         this.eagle.eatingTicks = 100;
                     }
@@ -300,7 +302,7 @@ public class GiantEagleEntity extends TamableAnimal {
             double ry = this.eagle.getY() + (this.eagle.random.nextDouble() - 0.5D) * 8.0D;
             double rz = this.eagle.getZ() + look.z * 16.0D + (this.eagle.random.nextDouble() - 0.5D) * 16.0D;
 
-            if (ry < this.eagle.level().getMinBuildHeight() + 5) ry += 10;
+            if (ry < this.eagle.level().getMinY() + 5) ry += 10;
             return new Vec3(rx, ry, rz);
         }
     }

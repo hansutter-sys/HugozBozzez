@@ -25,7 +25,8 @@ public record ConfigurableSpawnBiomeModifier(HolderSet<Biome> biomes) implements
             if (weight > 0) {
                 builder.getMobSpawnSettings().addSpawn(
                         MobCategory.MONSTER,
-                        new MobSpawnSettings.SpawnerData(ModEntities.MEGA_CREEPER.get(), weight, 1, 1)
+                        weight,
+                        new MobSpawnSettings.SpawnerData(ModEntities.MEGA_CREEPER.get(), 1, 1)
                 );
             }
         }

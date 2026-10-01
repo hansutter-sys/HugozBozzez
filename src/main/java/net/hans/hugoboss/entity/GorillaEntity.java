@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -23,9 +24,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class GorillaEntity extends Monster {
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(
+            UUID.randomUUID(),
             this.getDisplayName(),
             BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS
@@ -72,7 +76,7 @@ public class GorillaEntity extends Monster {
     public void tick() {
         super.tick();
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
             LivingEntity target = this.getTarget();
             if (target != null && target.isAlive()) {
@@ -112,9 +116,9 @@ public class GorillaEntity extends Monster {
             double y = this.getY();
             double z = this.getZ() + (this.random.nextDouble() - 0.5D) * 4.0D;
 
-            MonkeyEntity monkey = ModEntities.MONKEY.get().create(level);
+            MonkeyEntity monkey = ModEntities.MONKEY.get().create(level, EntitySpawnReason.MOB_SUMMONED);
             if (monkey != null) {
-                monkey.moveTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
+                monkey.snapTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
                 monkey.setTarget(target);
                 level.addFreshEntity(monkey);
 
@@ -164,7 +168,7 @@ public class GorillaEntity extends Monster {
     @Override
     public void die(DamageSource damageSource) {
         super.die(damageSource);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             for (ServerPlayer player : this.bossEvent.getPlayers()) {
                 this.bossEvent.removePlayer(player);
             }

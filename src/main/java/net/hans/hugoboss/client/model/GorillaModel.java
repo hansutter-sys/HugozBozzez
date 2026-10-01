@@ -1,13 +1,12 @@
 package net.hans.hugoboss.client.model;
 
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
-public class GorillaModel<T extends Mob> extends HierarchicalModel<T> {
-    private final ModelPart root;
+public class GorillaModel extends EntityModel<LivingEntityRenderState> {
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart right_arm;
@@ -16,7 +15,7 @@ public class GorillaModel<T extends Mob> extends HierarchicalModel<T> {
     private final ModelPart left_leg;
 
     public GorillaModel(ModelPart root) {
-        this.root = root;
+        super(root);
         this.head = root.getChild("head");
         this.body = root.getChild("body");
         this.right_arm = root.getChild("right_arm");
@@ -87,20 +86,16 @@ public class GorillaModel<T extends Mob> extends HierarchicalModel<T> {
     }
 
     @Override
-    public ModelPart root() {
-        return this.root;
-    }
-
-    @Override
-    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-        this.head.xRot = headPitch * ((float)Math.PI / 180F);
+    public void setupAnim(LivingEntityRenderState state) {
+        super.setupAnim(state);
+        this.head.yRot = state.yRot * ((float)Math.PI / 180F);
+        this.head.xRot = state.xRot * ((float)Math.PI / 180F);
 
         // Knuckle walking / gorilla walk cycles
-        this.right_arm.xRot = -0.4F + (float)Math.sin(limbSwing * 0.5F + (float)Math.PI) * 0.8F * limbSwingAmount;
-        this.left_arm.xRot = -0.4F + (float)Math.sin(limbSwing * 0.5F) * 0.8F * limbSwingAmount;
+        this.right_arm.xRot = -0.4F + (float)Math.sin(state.walkAnimationPos * 0.5F + (float)Math.PI) * 0.8F * state.walkAnimationSpeed;
+        this.left_arm.xRot = -0.4F + (float)Math.sin(state.walkAnimationPos * 0.5F) * 0.8F * state.walkAnimationSpeed;
         
-        this.right_leg.xRot = (float)Math.sin(limbSwing * 0.5F) * 0.8F * limbSwingAmount;
-        this.left_leg.xRot = (float)Math.sin(limbSwing * 0.5F + (float)Math.PI) * 0.8F * limbSwingAmount;
+        this.right_leg.xRot = (float)Math.sin(state.walkAnimationPos * 0.5F) * 0.8F * state.walkAnimationSpeed;
+        this.left_leg.xRot = (float)Math.sin(state.walkAnimationPos * 0.5F + (float)Math.PI) * 0.8F * state.walkAnimationSpeed;
     }
 }
